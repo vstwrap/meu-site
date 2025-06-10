@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Relatório de Lojas - Aprimorado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-blue': '#0052CC',
+                        'brand-blue-light': '#DEEBFF',
+                        'brand-blue-dark': '#003E99',
+                        'brand-green': '#36B37E',
+                        'brand-green-light': '#E3FCEF',
+                        'brand-red': '#FF5630',
+                        'brand-red-light': '#FFEBE6',
+                        'brand-yellow': '#FFAB00',
+                        'brand-yellow-light': '#FFF0B3',
+                        'neutral-lightest': '#F9FAFB',
+                        'neutral-light': '#F4F5F7',
+                        'neutral-medium': '#DFE1E6',
+                        'neutral-dark': '#6B7280',
+                        'neutral-darker': '#42526E',
+                        'neutral-darkest': '#172B4D',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            margin-right: 0.25rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            font-weight: 600;
+            color: #42526E;
+            background-color: #F4F5F7;
+            border: 1px solid #DFE1E6;
+            border-bottom: none;
+            transition: all 0.2s ease-in-out;
+            outline: none;
+        }
+        .tab-button:hover, .tab-button:focus {
+            background-color: white;
+            color: #0052CC;
+        }
+        .tab-button.active {
+            background-color: white;
+            color: #0052CC;
+            border-color: #DFE1E6;
+            border-bottom: 1px solid white;
+            position: relative;
+            top: 1px;
+            box-shadow: 0 -2px 4px -2px rgba(0,0,0,0.05);
+        }
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+            background-color: white;
+            border: 1px solid #DFE1E6;
+            border-radius: 0 0.5rem 0.5rem 0.5rem;
+            box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.07), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 0 1px 6px -1px rgba(0,0,0,0.02), 0 2px 4px 0 rgba(0,0,0,0.02);
+            border: 1px solid #DFE1E6;
+            margin-bottom: 1.5rem;
+        }
+        .card-header {
+            border-bottom: 1px solid #F4F5F7;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-auto th {
+            background-color: #F4F5F7;
+            font-weight: 600;
+            color: #172B4D;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #DFE1E6;
+        }
+        .table-auto td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #F4F5F7;
+            color: #42526E;
+        }
+        .table-auto tbody tr:nth-child(even) {
+            background-color: #F9FAFB;
+        }
+        .table-auto tbody tr:hover {
+            background-color: #DEEBFF;
+        }
+        .kpi-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #DFE1E6;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03);
+        }
+        .kpi-title {
+             font-size: 0.875rem;
+             font-weight: 600;
+             color: #42526E;
+             margin-bottom: 0.25rem;
+        }
+        .kpi-value {
+             font-size: 2.25rem;
+             font-weight: 800;
+             color: #172B4D;
+             line-height: 1.1;
+        }
+        .kpi-variation {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .variation-positive { color: #36B37E; font-weight: 500; }
+        .variation-negative { color: #FF5630; font-weight: 500; }
+        .form-input, .form-select {
+            border-radius: 0.5rem;
+            border: 1px solid #DFE1E6;
+            padding: 0.625rem 0.875rem;
+            width: 100%;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            background-color: white;
+            color: #172B4D;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #0052CC;
+            box-shadow: 0 0 0 3px #DEEBFF;
+            outline: none;
+        }
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: 1px solid transparent;
+        }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.875rem; }
+        .btn-primary { background-color: #0052CC; color: white; border-color: #0052CC; }
+        .btn-primary:hover { background-color: #003E99; border-color: #003E99; }
+        .btn-secondary { background-color: #DFE1E6; color: #172B4D; border-color: #DFE1E6; }
+        .btn-secondary:hover { background-color: #42526E; color: white; border-color: #42526E; }
+        .btn-danger { background-color: #FF5630; color: white; border-color: #FF5630; }
+        .btn-danger:hover { background-color: #D94A27; border-color: #D94A27; }
+        .chart-container { position: relative; height: 350px; width: 100%; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(23, 43, 77, 0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 2rem; border: none; width: 90%; max-width: 500px; border-radius: 0.75rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); text-align: center; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .modal-title { font-size: 1.25rem; font-weight: 700; color: #172B4D; }
+        .modal-close { color: #6B7280; font-size: 1.75rem; font-weight: bold; cursor: pointer; background: none; border: none; padding: 0; }
+        .modal-close:hover, .modal-close:focus { color: #172B4D; }
+        .modal-body { margin-bottom: 1.5rem; color: #42526E; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; }
+        .skeleton-row td > div, .skeleton-kpi .kpi-value, .skeleton-kpi .kpi-variation { background-color: #DFE1E6; animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; border-radius: 0.25rem; color: transparent !important; user-select: none; }
+        .skeleton-row td { background-color: #F4F5F7 !important; color: transparent !important; user-select: none; }
+        .skeleton-kpi .kpi-value { height: 2rem; width: 70%; margin-bottom: 0.25rem; }
+        .skeleton-kpi .kpi-variation { height: 1rem; width: 40%; }
+        @keyframes pulse { 50% { opacity: .5; } }
+        .icon-sm { width: 1.125rem; height: 1.125rem; }
+        .icon-md { width: 1.25rem; height: 1.25rem; }
+    </style>
+</head>
+<body class="p-4 md:p-6 lg:p-8">
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="icon-arrow-up" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></symbol>
+        <symbol id="icon-arrow-down" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></symbol>
+        <symbol id="icon-edit" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></symbol>
+        <symbol id="icon-delete" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></symbol>
+        <symbol id="icon-save" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></symbol>
+        <symbol id="icon-plus" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v4h4a1 1 0 110 2h-4v4a1 1 0 11-2 0v-4H5a1 1 0 110-2h4V4a1 1 0 011-1z" clip-rule="evenodd" /></symbol>
+    </svg>
+
+    <div class="container mx-auto max-w-full">
+        <header class="mb-6 md:mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-neutral-darkest mb-1">Painel de Relatório de Lojas</h1>
+            <p class="text-neutral-darker text-md" id="competenciaInfo">Competência Analisada: Carregando...</p>
+            <div class="mt-2 text-xs text-neutral-dark">
+                <span>User ID: <span id="userIdDisplay" class="font-medium">Carregando...</span></span> | 
+                <span>App ID: <span id="appIdDisplay" class="font-medium">Carregando...</span></span>
+            </div>
+        </header>
+
+        <div class="mb-6 border-b border-neutral-medium">
+            <button class="tab-button active" onclick="openTab(event, 'dashboardGeral')">Dashboard Geral</button>
+            <button class="tab-button" onclick="openTab(event, 'desempenhoOperacional')">Desempenho Detalhado</button>
+            <button class="tab-button" onclick="openTab(event, 'analiseComparativa')">Análise Comparativa</button>
+            <button class="tab-button" onclick="openTab(event, 'cadastroConfiguracoes')">Cadastro e Configurações</button>
+        </div>
+        
+        <div id="dashboardGeral" class="tab-content active">
+            <h2 class="text-2xl font-semibold text-neutral-darkest mb-6">Visão Geral de Performance (Mês Atual)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="kpi-container"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 card">
+                    <h3 class="text-lg font-semibold text-neutral-darkest mb-4">Faturamento Mensal (Últimos 6 Meses)</h3>
+                    <div class="chart-container"><canvas id="chartFaturamentoMensal"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-neutral-darkest mb-4">Faturamento por Loja (Mês Atual)</h3>
+                    <div class="chart-container"><canvas id="chartFaturamentoPorLoja"></canvas></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div class="card">
+                    <h3 class="text-lg font-semibold text-neutral-darkest mb-4">Ranking de Lojas por Faturamento (Mês Atual)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead><tr><th>#</th><th>Loja</th><th>Faturamento</th></tr></thead>
+                            <tbody id="rankingLojasBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-neutral-darkest mb-4">Melhores e Piores Dias (Faturamento no Mês Atual)</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-brand-green mb-2 text-center">Top 5 Dias</h4>
+                            <ul id="topDiasList" class="space-y-1"></ul>
+                        </div>
+                         <div>
+                            <h4 class="font-semibold text-brand-red mb-2 text-center">Piores 5 Dias</h4>
+                            <ul id="pioresDiasList" class="space-y-1"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="desempenhoOperacional" class="tab-content">
+            <h2 class="text-2xl font-semibold text-neutral-darkest mb-6">Desempenho Operacional Detalhado</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 p-4 bg-neutral-lightest border border-neutral-medium rounded-lg">
+                <div>
+                    <label for="filtroLojaAba1" class="block text-sm font-medium text-neutral-darker mb-1">Filtrar por Loja:</label>
+                    <select id="filtroLojaAba1" class="form-select"><option value="todas">Todas as Lojas</option></select>
+                </div>
+                <div>
+                    <label for="filtroPeriodoAba1Inicio" class="block text-sm font-medium text-neutral-darker mb-1">Data Início:</label>
+                    <input type="date" id="filtroPeriodoAba1Inicio" class="form-input">
+                </div>
+                 <div>
+                    <label for="filtroPeriodoAba1Fim" class="block text-sm font-medium text-neutral-darker mb-1">Data Fim:</label>
+                    <input type="date" id="filtroPeriodoAba1Fim" class="form-input">
+                </div>
+            </div>
+            <div class="card mb-6">
+                <div class="card-header">
+                    <div>
+                        <h3 class="text-xl font-semibold text-neutral-darkest">Dashboard 1.1: Resumo dos Indicadores Chave</h3>
+                        <p class="text-sm text-neutral-dark">Período selecionado vs. período anterior equivalente</p>
+                    </div>
+                </div>
+                <div id="dashboard1_1_content" class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead><tr><th>Indicador</th><th>Período Selecionado</th><th>Período Anterior</th><th>Variação (Absoluta)</th><th>Variação (%)</th></tr></thead>
+                        <tbody id="kpiTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card mb-6">
+                 <div class="card-header">
+                     <div>
+                        <h3 class="text-xl font-semibold text-neutral-darkest">Dashboard 1.2: Evolução Diária dos Indicadores</h3>
+                        <p class="text-sm text-neutral-dark">Dados do período selecionado</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-md font-medium text-neutral-darkest mb-2 text-center">Atendimentos e Vendas Totais por Dia</h4>
+                        <div class="chart-container"><canvas id="chartAtendimentosVendasDia"></canvas></div>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-neutral-darkest mb-2 text-center">Total Vendido (R$) por Dia</h4>
+                        <div class="chart-container"><canvas id="chartTotalVendidoDia"></canvas></div>
+                    </div>
+                </div>
+                 <div class="mt-6">
+                    <h4 class="text-md font-medium text-neutral-darkest mb-2 text-center">Composição das Vendas por Dia (Vinculadas vs. Não Vinculadas)</h4>
+                    <div class="chart-container" style="height: 350px;"><canvas id="chartComposicaoVendasDia"></canvas></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="text-xl font-semibold text-neutral-darkest">Dashboard 1.3: Tabela Detalhada - Dados Diários</h3>
+                        <p class="text-sm text-neutral-dark">Dados do período selecionado</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead><tr><th>Dia</th><th>Qtd Atendimentos</th><th>Vendas Vinculadas (Qtd)</th><th>Qtd Total de Vendas</th><th>Total Vendido (R$)</th><th>Ticket Médio Diário (R$)</th><th>Taxa de Conversão Diária (%)</th></tr></thead>
+                        <tbody id="tabelaDadosDiariosBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="analiseComparativa" class="tab-content">
+             <h2 class="text-2xl font-semibold text-neutral-darkest mb-6">Análise Comparativa Mensal e Indicadores de Eficiência</h2>
+            <div class="mb-6 p-4 bg-neutral-lightest border border-neutral-medium rounded-lg md:w-1/2 lg:w-1/3">
+                <label for="filtroLojaAba2" class="block text-sm font-medium text-neutral-darker mb-1">Filtrar por Loja:</label>
+                <select id="filtroLojaAba2" class="form-select"><option value="todas">Todas as Lojas</option></select>
+            </div>
+             <div class="card mb-6">
+                <div class="card-header">
+                    <div>
+                        <h3 class="text-xl font-semibold text-neutral-darkest">Dashboard 2.1: Comparativo de Performance Mensal Chave</h3>
+                        <p class="text-sm text-neutral-dark">Mês Atual (Completo) vs. Mês Anterior (Completo)</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead><tr><th>Indicador</th><th>Mês Atual (Completo)</th><th>Mês Anterior (Completo)</th><th>Crescimento/Variação (Absoluto)</th><th>Crescimento/Variação (%)</th></tr></thead>
+                        <tbody id="comparativoMensalTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card mb-6">
+                <div class="card-header">
+                    <div><h3 class="text-xl font-semibold text-neutral-darkest">Dashboard 2.2: Visualização Gráfica do Comparativo Mensal</h3></div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-md font-medium text-neutral-darkest mb-2 text-center">Faturamento (R$)</h4>
+                        <div class="chart-container"><canvas id="chartComparativoFaturamento"></canvas></div>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-neutral-darkest mb-2 text-center">Taxa de Conversão (%)</h4>
+                        <div class="chart-container"><canvas id="chartComparativoConversao"></canvas></div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <h4 class="text-md font-medium text-neutral-darkest mb-2 text-center">Valor Médio da Venda (Ticket Médio R$)</h4>
+                        <div class="chart-container" style="height: 350px;"><canvas id="chartComparativoTicketMedio"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="cadastroConfiguracoes" class="tab-content">
+            <h2 class="text-2xl font-semibold text-neutral-darkest mb-6">Cadastro e Configurações</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-neutral-darkest">3.1 Cadastro de Lojas</h3>
+                        <button id="btnNovaLoja" class="btn btn-sm btn-primary"><svg class="icon-sm"><use href="#icon-plus"></use></svg>Nova Loja</button>
+                    </div>
+                    <form id="formCadastroLoja" class="space-y-4">
+                        <div><label for="lojaNome" class="block text-sm font-medium text-neutral-darker">Nome da Loja:</label><input type="text" id="lojaNome" name="lojaNome" class="form-input mt-1" required></div>
+                        <div><label for="lojaRegiao" class="block text-sm font-medium text-neutral-darker">Região/Cidade:</label><input type="text" id="lojaRegiao" name="lojaRegiao" class="form-input mt-1"></div>
+                        <div><label for="lojaGerente" class="block text-sm font-medium text-neutral-darker">Gerente Responsável:</label><input type="text" id="lojaGerente" name="lojaGerente" class="form-input mt-1"></div>
+                        <input type="hidden" id="lojaId" name="lojaId">
+                        <button type="submit" class="btn btn-primary w-full"><svg class="icon-sm"><use href="#icon-save"></use></svg>Salvar Loja</button>
+                    </form>
+                    <hr class="my-6 border-neutral-medium">
+                    <h4 class="text-lg font-medium text-neutral-darkest mb-3">Lojas Cadastradas</h4>
+                    <div id="listaLojas" class="max-h-96 overflow-y-auto space-y-2"><p class="text-center text-neutral-dark p-4">Carregando lojas...</p></div>
+                </div>
+                <div class="card">
+                     <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-neutral-darkest">3.2 Registro de Dados Diários</h3>
+                        <button id="btnNovoRegistro" class="btn btn-sm btn-primary"><svg class="icon-sm"><use href="#icon-plus"></use></svg>Novo Registro</button>
+                    </div>
+                    <form id="formRegistroDiario" class="space-y-4">
+                        <div><label for="registroData" class="block text-sm font-medium text-neutral-darker">Data:</label><input type="date" id="registroData" name="registroData" class="form-input mt-1" required></div>
+                        <div><label for="registroLojaId" class="block text-sm font-medium text-neutral-darker">Loja:</label><select id="registroLojaId" name="registroLojaId" class="form-select mt-1" required><option value="">Selecione uma loja</option></select></div>
+                        <div><label for="registroAtendimentos" class="block text-sm font-medium text-neutral-darker">Qtd Atendimentos:</label><input type="number" id="registroAtendimentos" name="registroAtendimentos" class="form-input mt-1" min="0" required></div>
+                        <div><label for="registroVendasVinculadas" class="block text-sm font-medium text-neutral-darker">Vendas Vinculadas (Qtd):</label><input type="number" id="registroVendasVinculadas" name="registroVendasVinculadas" class="form-input mt-1" min="0" required></div>
+                        <div><label for="registroVendasTotais" class="block text-sm font-medium text-neutral-darker">Qtd Total de Vendas:</label><input type="number" id="registroVendasTotais" name="registroVendasTotais" class="form-input mt-1" min="0" required></div>
+                        <div><label for="registroTotalVendido" class="block text-sm font-medium text-neutral-darker">Total Vendido (R$):</label><input type="number" id="registroTotalVendido" name="registroTotalVendido" class="form-input mt-1" min="0" step="0.01" required></div>
+                        <input type="hidden" id="registroId" name="registroId">
+                        <button type="submit" class="btn btn-primary w-full"><svg class="icon-sm"><use href="#icon-save"></use></svg>Salvar Registro Diário</button>
+                    </form>
+                     <hr class="my-6 border-neutral-medium">
+                    <h4 class="text-lg font-medium text-neutral-darkest mb-3">Registros Recentes (Últimos 20)</h4>
+                    <div id="listaRegistrosDiarios" class="max-h-96 overflow-y-auto space-y-2"><p class="text-center text-neutral-dark p-4">Carregando registros...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="messageModal" class="modal"><div class="modal-content"><div class="modal-header"><h5 id="messageModalTitle" class="modal-title">Notificação</h5><button type="button" class="modal-close" onclick="closeModal('messageModal')">&times;</button></div><div class="modal-body"><p id="messageModalText"></p></div><div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('messageModal')">OK</button></div></div></div>
+    <div id="confirmationModal" class="modal"><div class="modal-content"><div class="modal-header"><h5 id="confirmationModalTitle" class="modal-title">Confirmar Ação</h5><button type="button" class="modal-close" onclick="closeModal('confirmationModal')">&times;</button></div><div class="modal-body"><p id="confirmationModalText"></p></div><div class="modal-footer"><button id="confirmCancelButton" class="btn btn-secondary" onclick="closeModal('confirmationModal')">Cancelar</button><button id="confirmOkButton" class="btn btn-danger">Confirmar</button></div></div></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, Timestamp, orderBy, limit, updateDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configuration & Initialization ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'painel-lojas-app-dev';
+        
+        document.getElementById('appIdDisplay').textContent = appId;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        // setLogLevel('debug'); 
+
+        let userId = null;
+        let lojasCache = []; 
+        let registrosDiariosCache = []; 
+        let chartInstances = {}; 
+
+        const HOJE = new Date(); 
+        HOJE.setHours(0,0,0,0); 
+        const ANO_ATUAL = HOJE.getFullYear();
+        const MES_ATUAL_NUM = HOJE.getMonth(); 
+        const DATA_INICIO_MES_ATUAL = new Date(ANO_ATUAL, MES_ATUAL_NUM, 1);
+        const DATA_FIM_MES_ATUAL = new Date(ANO_ATUAL, MES_ATUAL_NUM + 1, 0); 
+        const DATA_INICIO_MES_ANTERIOR = new Date(ANO_ATUAL, MES_ATUAL_NUM - 1, 1);
+        const DATA_FIM_MES_ANTERIOR = new Date(ANO_ATUAL, MES_ATUAL_NUM, 0); 
+
+        document.getElementById('competenciaInfo').textContent = `Competência Analisada: ${DATA_INICIO_MES_ATUAL.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })} vs. ${DATA_INICIO_MES_ANTERIOR.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
+
+        // --- Authentication ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                document.getElementById('userIdDisplay').textContent = userId;
+                await loadInitialData(); 
+            } else {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Erro na autenticação:", error);
+                    document.getElementById('userIdDisplay').textContent = "Erro de autenticação";
+                    showModal(`Erro de autenticação: ${error.message}`, 'Erro');
+                }
+            }
+        });
+        
+        // --- UI Helpers ---
+        function showModal(message, title = "Notificação", modalId = 'messageModal') {
+            const modalTitleEl = document.getElementById(`${modalId}Title`);
+            const modalTextEl = document.getElementById(`${modalId}Text`);
+            const modalEl = document.getElementById(modalId);
+            if (modalTitleEl) modalTitleEl.textContent = title;
+            if (modalTextEl) modalTextEl.textContent = message;
+            if (modalEl) modalEl.style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            const modalEl = document.getElementById(modalId);
+            if (modalEl) modalEl.style.display = 'none';
+        }
+        window.closeModal = closeModal;
+
+        function showConfirmationModal(message, onConfirm, title = "Confirmar Ação") {
+            showModal(message, title, 'confirmationModal');
+            const confirmOkButton = document.getElementById('confirmOkButton');
+            const newOkButton = confirmOkButton.cloneNode(true);
+            confirmOkButton.parentNode.replaceChild(newOkButton, confirmOkButton);
+            newOkButton.onclick = () => { onConfirm(); closeModal('confirmationModal'); };
+        }
+        
+        window.onclick = (event) => {
+            const messageModal = document.getElementById('messageModal');
+            const confirmationModal = document.getElementById('confirmationModal');
+            if (event.target === messageModal) closeModal('messageModal');
+            if (event.target === confirmationModal) closeModal('confirmationModal');
+        }
+
+        window.openTab = (event, tabName) => {
+            document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+            document.querySelectorAll(".tab-button").forEach(tb => tb.classList.remove("active"));
+            const activeTabContent = document.getElementById(tabName);
+            if (activeTabContent) activeTabContent.classList.add("active");
+            if (event && event.currentTarget) event.currentTarget.classList.add("active");
+        }
+
+        // --- Formatting Helpers ---
+        function formatCurrency(value) { return (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function formatPercentage(value) { return (value || 0).toFixed(2) + '%'; }
+
+        function calculateVariation(current, previous) {
+            if (previous === 0 || previous == null) {
+                return { absolute: current || 0, percent: (current || 0) > 0 ? Infinity : 0 };
+            }
+            const absolute = (current || 0) - (previous || 0);
+            const percent = (absolute / Math.abs(previous)) * 100;
+            return { absolute, percent };
+        }
+        
+        function getVariationClass(value) {
+            if (value > 0) return 'variation-positive';
+            if (value < 0) return 'variation-negative';
+            return 'text-neutral-dark';
+        }
+
+        function deepMerge(target, source) {
+            const output = { ...target };
+            if (isObject(target) && isObject(source)) {
+                Object.keys(source).forEach(key => {
+                    if (isObject(source[key])) {
+                        if (!(key in target))
+                            Object.assign(output, { [key]: source[key] });
+                        else
+                            output[key] = deepMerge(target[key], source[key]);
+                    } else {
+                        Object.assign(output, { [key]: source[key] });
+                    }
+                });
+            }
+            return output;
+        }
+        function isObject(item) {
+            return (item && typeof item === 'object' && !Array.isArray(item));
+        }
+        
+        // --- Data Loading & Initialization ---
+        async function loadInitialData() {
+            if (!userId) return;
+            setupFiltersAndButtons();
+            initializeAllSkeletons();
+            await listenToLojas();
+            await listenToRegistrosDiarios();
+        }
+        
+        function setupFiltersAndButtons() {
+            document.getElementById('filtroLojaAba1')?.addEventListener('change', updateAllDashboards);
+            document.getElementById('filtroPeriodoAba1Inicio')?.addEventListener('change', updateAllDashboards);
+            document.getElementById('filtroPeriodoAba1Fim')?.addEventListener('change', updateAllDashboards);
+            document.getElementById('filtroLojaAba2')?.addEventListener('change', updateAllDashboards);
+            
+            document.getElementById('filtroPeriodoAba1Inicio').valueAsDate = DATA_INICIO_MES_ATUAL;
+            document.getElementById('filtroPeriodoAba1Fim').valueAsDate = HOJE; 
+            
+            document.getElementById('btnNovaLoja')?.addEventListener('click', handleNovaLoja);
+            document.getElementById('btnNovoRegistro')?.addEventListener('click', handleNovoRegistro);
+        }
+
+        // --- Form Handlers ---
+        function handleNovaLoja() {
+            const form = document.getElementById('formCadastroLoja');
+            if(!form) return;
+            form.reset();
+            document.getElementById('lojaId').value = '';
+            const tabButton = document.querySelector('.tab-button[onclick*="cadastroConfiguracoes"]');
+            if (tabButton && !tabButton.classList.contains('active')) {
+                openTab({ currentTarget: tabButton }, 'cadastroConfiguracoes');
+            }
+            document.getElementById('lojaNome').focus();
+        }
+        
+        function handleNovoRegistro() {
+            const form = document.getElementById('formRegistroDiario');
+            if(!form) return;
+            form.reset();
+            document.getElementById('registroId').value = '';
+            document.getElementById('registroData').valueAsDate = new Date();
+            const tabButton = document.querySelector('.tab-button[onclick*="cadastroConfiguracoes"]');
+            if (tabButton && !tabButton.classList.contains('active')) {
+                openTab({ currentTarget: tabButton }, 'cadastroConfiguracoes');
+            }
+            document.getElementById('registroData').focus();
+        }
+
+        document.getElementById('formCadastroLoja')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('lojaId').value;
+            const data = {
+                nome: document.getElementById('lojaNome').value.trim(),
+                regiao: document.getElementById('lojaRegiao').value.trim(),
+                gerente: document.getElementById('lojaGerente').value.trim(),
+            };
+            if (!data.nome) return showModal("O nome da loja é obrigatório.", "Erro de Validação");
+            try {
+                if (id) await updateDoc(doc(db, `artifacts/${appId}/public/data/lojas/${id}`), data);
+                else await addDoc(collection(db, `artifacts/${appId}/public/data/lojas`), data);
+                showModal(`Loja ${id ? 'atualizada' : 'cadastrada'} com sucesso!`);
+                handleNovaLoja();
+            } catch (error) { showModal(`Erro ao salvar loja: ${error.message}`, "Erro no Servidor"); }
+        });
+        
+        document.getElementById('formRegistroDiario')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('registroId').value;
+            const dataInput = document.getElementById('registroData').value;
+            if (!dataInput) return showModal("A data do registro é obrigatória.", "Erro de Validação");
+            
+            const [year, month, day] = dataInput.split('-').map(Number);
+            const data = {
+                data: Timestamp.fromDate(new Date(year, month - 1, day)), 
+                lojaId: document.getElementById('registroLojaId').value,
+                qtdAtendimentos: parseInt(document.getElementById('registroAtendimentos').value) || 0,
+                vendasVinculadasQtd: parseInt(document.getElementById('registroVendasVinculadas').value) || 0,
+                qtdTotalVendas: parseInt(document.getElementById('registroVendasTotais').value) || 0,
+                totalVendido: parseFloat(document.getElementById('registroTotalVendido').value) || 0,
+            };
+
+            if (!data.lojaId) return showModal("Selecione uma loja.", "Erro de Validação");
+            if (data.vendasVinculadasQtd > data.qtdTotalVendas) return showModal("Vendas vinculadas não podem ser maiores que vendas totais.", "Erro de Validação");
+
+            try {
+                if (id) await updateDoc(doc(db, `artifacts/${appId}/public/data/registrosDiarios/${id}`), data);
+                else await addDoc(collection(db, `artifacts/${appId}/public/data/registrosDiarios`), data);
+                showModal(`Registro ${id ? 'atualizado' : 'salvo'} com sucesso!`);
+                handleNovoRegistro();
+            } catch (error) { showModal(`Erro ao salvar registro: ${error.message}`, "Erro no Servidor"); }
+        });
+
+        // --- Firestore Listeners & Renderers ---
+        async function listenToLojas() {
+            const path = `artifacts/${appId}/public/data/lojas`;
+            onSnapshot(collection(db, path), (snapshot) => {
+                lojasCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderListaLojas();
+                populateLojaFilters();
+                updateAllDashboards(); 
+            }, (error) => {
+                console.error(`Erro ao ouvir lojas em ${path}:`, error);
+                renderListaLojas();
+            });
+        }
+        
+        async function listenToRegistrosDiarios() {
+            const path = `artifacts/${appId}/public/data/registrosDiarios`;
+            onSnapshot(collection(db, path), (snapshot) => {
+                registrosDiariosCache = snapshot.docs.map(d => ({ id: d.id, ...d.data(), data: d.data().data?.toDate() }));
+                updateAllDashboards(); 
+            }, (error) => console.error(`Erro ao ouvir registros em ${path}:`, error));
+            
+            onSnapshot(query(collection(db, path), orderBy("data", "desc"), limit(20)), (snapshot) => {
+                const recentes = snapshot.docs.map(d => ({ id: d.id, ...d.data(), data: d.data().data?.toDate() }));
+                renderListaRegistrosDiarios(recentes);
+            }, (error) => renderListaRegistrosDiarios([]));
+        }
+
+        function renderListaLojas() {
+            const listaDiv = document.getElementById('listaLojas');
+            if (!listaDiv) return;
+            if (lojasCache.length === 0) {
+                listaDiv.innerHTML = '<p class="text-center text-neutral-dark p-4">Nenhuma loja cadastrada.</p>';
+                document.getElementById('registroLojaId').innerHTML = '<option value="">Nenhuma loja cadastrada</option>';
+                return;
+            }
+            let html = '', optionsHtml = '<option value="">Selecione uma loja</option>';
+            lojasCache.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(loja => {
+                html += `<div class="p-3 bg-neutral-lightest rounded-md flex justify-between items-center border border-neutral-medium hover:bg-brand-blue-light">
+                        <div><p class="font-semibold text-neutral-darkest">${loja.nome}</p><p class="text-sm text-neutral-dark">${loja.regiao || 'Sem região'}</p></div>
+                        <div class="flex gap-2">
+                            <button onclick="editLoja('${loja.id}')" class="btn btn-sm btn-secondary p-2" title="Editar"><svg class="icon-sm"><use href="#icon-edit"></use></svg></button>
+                            <button onclick="confirmDeleteLoja('${loja.id}', '${loja.nome.replace(/'/g, "\\'")}')" class="btn btn-sm btn-danger p-2" title="Excluir"><svg class="icon-sm"><use href="#icon-delete"></use></svg></button>
+                        </div></div>`;
+                optionsHtml += `<option value="${loja.id}">${loja.nome}</option>`;
+            });
+            listaDiv.innerHTML = html;
+            document.getElementById('registroLojaId').innerHTML = optionsHtml;
+        }
+        window.editLoja = (id) => {
+            const loja = lojasCache.find(l => l.id === id);
+            if(loja) {
+                handleNovaLoja();
+                document.getElementById('lojaId').value = loja.id;
+                document.getElementById('lojaNome').value = loja.nome || '';
+                document.getElementById('lojaRegiao').value = loja.regiao || '';
+                document.getElementById('lojaGerente').value = loja.gerente || '';
+            }
+        };
+        window.confirmDeleteLoja = (id, nome) => showConfirmationModal(`Excluir a loja "${nome}"? A ação não pode ser desfeita.`, () => deleteLoja(id));
+        async function deleteLoja(id) {
+            try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/lojas`, id)); showModal("Loja excluída!"); }
+            catch (error) { showModal(`Erro ao excluir: ${error.message}`, "Erro"); }
+        }
+
+        function populateLojaFilters() {
+            document.querySelectorAll('#filtroLojaAba1, #filtroLojaAba2').forEach(select => {
+                const currentVal = select.value;
+                let optionsHtml = '<option value="todas">Todas as Lojas</option>';
+                lojasCache.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(loja => optionsHtml += `<option value="${loja.id}">${loja.nome}</option>`);
+                select.innerHTML = optionsHtml;
+                select.value = lojasCache.some(l => l.id === currentVal) ? currentVal : 'todas';
+            });
+        }
+
+        function renderListaRegistrosDiarios(registros) {
+            const listaDiv = document.getElementById('listaRegistrosDiarios');
+            if (!listaDiv) return;
+            if (!registros || registros.length === 0) {
+                listaDiv.innerHTML = '<p class="text-center text-neutral-dark p-4">Nenhum registro recente.</p>';
+                return;
+            }
+            let html = '';
+            registros.forEach(reg => {
+                const loja = lojasCache.find(l => l.id === reg.lojaId);
+                const dataFmt = reg.data ? reg.data.toLocaleDateString('pt-BR') : 'N/A';
+                html += `<div class="p-3 bg-neutral-lightest rounded-md border border-neutral-medium hover:bg-gray-100">
+                        <div class="flex justify-between items-start">
+                            <div><p class="font-semibold text-neutral-darkest">Data: ${dataFmt} - Loja: ${loja ? loja.nome : 'N/A'}</p><p class="text-sm text-neutral-dark">Vendas: ${reg.qtdTotalVendas}, Total: ${formatCurrency(reg.totalVendido)}</p></div>
+                            <div class="flex gap-2 mt-1">
+                                <button onclick="editRegistro('${reg.id}')" class="btn btn-sm btn-secondary p-2" title="Editar"><svg class="icon-sm"><use href="#icon-edit"></use></svg></button>
+                                <button onclick="confirmDeleteRegistro('${reg.id}', '${dataFmt}', '${loja ? loja.nome.replace(/'/g, "\\'") : 'N/A'}')" class="btn btn-sm btn-danger p-2" title="Excluir"><svg class="icon-sm"><use href="#icon-delete"></use></svg></button>
+                            </div></div></div>`;
+            });
+            listaDiv.innerHTML = html;
+        }
+        window.editRegistro = (id) => {
+            const reg = registrosDiariosCache.find(r => r.id === id);
+            if (reg) {
+                handleNovoRegistro();
+                document.getElementById('registroId').value = reg.id;
+                document.getElementById('registroData').valueAsDate = reg.data;
+                document.getElementById('registroLojaId').value = reg.lojaId;
+                document.getElementById('registroAtendimentos').value = reg.qtdAtendimentos;
+                document.getElementById('registroVendasVinculadas').value = reg.vendasVinculadasQtd;
+                document.getElementById('registroVendasTotais').value = reg.qtdTotalVendas;
+                document.getElementById('registroTotalVendido').value = reg.totalVendido;
+            }
+        };
+        window.confirmDeleteRegistro = (id, data, loja) => showConfirmationModal(`Excluir o registro de ${data} para a loja ${loja}?`, () => deleteRegistro(id));
+        async function deleteRegistro(id) {
+            try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/registrosDiarios`, id)); showModal("Registro excluído!"); }
+            catch (error) { showModal(`Erro ao excluir: ${error.message}`, "Erro"); }
+        }
+
+        // --- Dashboard Update Logic ---
+        function updateAllDashboards() {
+            if (!userId || !registrosDiariosCache) return;
+            console.log("Atualizando todos os dashboards...");
+            updateGeneralDashboard();
+            updateDashboard1_1();
+            updateDashboard1_2();
+            updateDashboard1_3();
+            updateDashboard2_1();
+            updateDashboard2_2();
+        }
+        
+        function getFilteredRegistros(inicio, fim, lojaId = 'todas') {
+            const dataInicio = new Date(inicio); dataInicio.setHours(0,0,0,0);
+            const dataFim = new Date(fim); dataFim.setHours(0,0,0,0);
+            return registrosDiariosCache.filter(r => {
+                if (!r.data) return false; 
+                const dataRegistro = new Date(r.data); dataRegistro.setHours(0,0,0,0);
+                return dataRegistro >= dataInicio && dataRegistro <= dataFim && (lojaId === 'todas' || r.lojaId === lojaId);
+            });
+        }
+
+        function aggregateData(registros) {
+            return registros.reduce((acc, curr) => {
+                acc.totalVendido += curr.totalVendido || 0;
+                acc.qtdTotalVendas += curr.qtdTotalVendas || 0;
+                acc.qtdAtendimentos += curr.qtdAtendimentos || 0;
+                acc.vendasVinculadasQtd += curr.vendasVinculadasQtd || 0;
+                return acc;
+            }, { totalVendido: 0, qtdTotalVendas: 0, qtdAtendimentos: 0, vendasVinculadasQtd: 0 });
+        }
+        
+        function initializeAllSkeletons() {
+            document.querySelectorAll('#kpiTableBody, #tabelaDadosDiariosBody, #comparativoMensalTableBody, #rankingLojasBody').forEach(el => {
+                if (el && el.parentElement.tHead) {
+                    el.innerHTML = getSkeletonRowHtml(el.parentElement.tHead.rows[0].cells.length)
+                }
+            });
+            const kpiContainer = document.getElementById('kpi-container');
+            if(kpiContainer) kpiContainer.innerHTML = getSkeletonKpiHtml(4);
+            const topDiasList = document.getElementById('topDiasList');
+            const pioresDiasList = document.getElementById('pioresDiasList');
+            if(topDiasList) topDiasList.innerHTML = '<li><div class="skeleton-row"><div></div></div></li>'.repeat(5);
+            if(pioresDiasList) pioresDiasList.innerHTML = '<li><div class="skeleton-row"><div></div></div></li>'.repeat(5);
+        }
+        function getSkeletonRowHtml(cols) { return `<tr class="skeleton-row">${'<td><div></div></td>'.repeat(cols)}</tr>`.repeat(3); }
+        function getSkeletonKpiHtml(count) {
+            return `<div class="kpi-card skeleton-kpi"><div class="kpi-title">Carregando...</div><div class="kpi-value"></div><div class="kpi-variation"></div></div>`.repeat(count);
+        }
+
+        // --- Chart Creation/Update Utility ---
+        function createOrUpdateChart(canvasId, config, noDataMsg = "Sem dados para exibir.") {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return null;
+            if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+            
+            let hasData = config?.data?.datasets?.some(ds => ds.data?.some(d => d > 0));
+            if (!hasData) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#6B7280'; ctx.font = "14px 'Inter'";
+                ctx.fillText('📊', canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillText(noDataMsg, canvas.width / 2, canvas.height / 2 + 10);
+                ctx.restore();
+                return null;
+            }
+            
+            const defaultOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Inter' }, color: '#42526E', padding: 20, boxWidth: 12 } },
+                    tooltip: {
+                        backgroundColor: '#172B4D', titleFont: { family: 'Inter', weight: 'bold' },
+                        bodyFont: { family: 'Inter' }, padding: 10, cornerRadius: 6, displayColors: true,
+                        callbacks: { 
+                            label: (ctx) => {
+                                let label = ctx.dataset.label || '';
+                                if (label) label += ': ';
+                                if (ctx.parsed?.y !== null || ctx.parsed !== null) {
+                                    const value = typeof ctx.parsed === 'object' ? ctx.parsed.y : ctx.parsed;
+                                    if (ctx.dataset.isCurrency) label += formatCurrency(value);
+                                    else if (ctx.dataset.isPercentage) label += formatPercentage(value);
+                                    else label += value?.toLocaleString('pt-BR') || '';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { family: 'Inter' }, color: '#6B7280' } },
+                    y: { beginAtZero: true, grid: { color: '#F4F5F7', borderDash: [3, 3] }, ticks: { font: { family: 'Inter' }, color: '#6B7280' } }
+                }
+            };
+            chartInstances[canvasId] = new Chart(canvas, deepMerge(config, {options: defaultOptions}));
+        }
+        
+        // --- General Dashboard ---
+        function updateGeneralDashboard() {
+            const registrosMesAtual = getFilteredRegistros(DATA_INICIO_MES_ATUAL, DATA_FIM_MES_ATUAL);
+            const dadosMesAtual = aggregateData(registrosMesAtual);
+            const ticketMedioAtual = dadosMesAtual.qtdTotalVendas > 0 ? dadosMesAtual.totalVendido / dadosMesAtual.qtdTotalVendas : 0;
+            const txConversaoAtual = dadosMesAtual.qtdAtendimentos > 0 ? (dadosMesAtual.qtdTotalVendas / dadosMesAtual.qtdAtendimentos) * 100 : 0;
+            
+            const registrosMesAnterior = getFilteredRegistros(DATA_INICIO_MES_ANTERIOR, DATA_FIM_MES_ANTERIOR);
+            const dadosMesAnterior = aggregateData(registrosMesAnterior);
+            const ticketMedioAnterior = dadosMesAnterior.qtdTotalVendas > 0 ? dadosMesAnterior.totalVendido / dadosMesAnterior.qtdTotalVendas : 0;
+            const txConversaoAnterior = dadosMesAnterior.qtdAtendimentos > 0 ? (dadosMesAnterior.qtdTotalVendas / dadosMesAnterior.qtdAtendimentos) * 100 : 0;
+
+            const kpis = [
+                { id: 'faturamento', title: 'Faturamento Total', value: dadosMesAtual.totalVendido, variation: calculateVariation(dadosMesAtual.totalVendido, dadosMesAnterior.totalVendido).percent, format: formatCurrency },
+                { id: 'ticket-medio', title: 'Ticket Médio', value: ticketMedioAtual, variation: calculateVariation(ticketMedioAtual, ticketMedioAnterior).percent, format: formatCurrency },
+                { id: 'tx-conversao', title: 'Taxa de Conversão', value: txConversaoAtual, variation: calculateVariation(txConversaoAtual, txConversaoAnterior).percent, format: formatPercentage },
+                { id: 'vendas', title: 'Total de Vendas', value: dadosMesAtual.qtdTotalVendas, variation: calculateVariation(dadosMesAtual.qtdTotalVendas, dadosMesAnterior.qtdTotalVendas).percent, format: (v) => v.toLocaleString('pt-BR') }
+            ];
+            
+            const kpiContainer = document.getElementById('kpi-container');
+            if(kpiContainer) {
+                kpiContainer.innerHTML = '';
+                kpis.forEach(kpi => {
+                    const variationClass = getVariationClass(kpi.variation);
+                    const icon = variationClass === 'variation-positive' ? 'icon-arrow-up' : 'icon-arrow-down';
+                    kpiContainer.innerHTML += `<div class="kpi-card">
+                            <h4 class="kpi-title">${kpi.title}</h4>
+                            <div class="kpi-value">${kpi.format(kpi.value)}</div>
+                            <div class="kpi-variation ${variationClass} flex items-center">
+                               ${isFinite(kpi.variation) && kpi.variation !== 0 ? `<svg class="icon-sm mr-1"><use href="#${icon}"></use></svg>` : ''}
+                               ${isFinite(kpi.variation) ? `${Math.abs(kpi.variation).toFixed(1)}% vs. mês anterior` : 'N/A'}
+                            </div></div>`;
+                });
+            }
+
+            const faturamentoMeses = {};
+            for(let i=0; i<6; i++) {
+                const d = new Date(ANO_ATUAL, MES_ATUAL_NUM - i, 1);
+                const mesKey = d.toLocaleString('pt-BR', {month: 'short', year: '2-digit'});
+                const inicioMes = new Date(d.getFullYear(), d.getMonth(), 1);
+                const fimMes = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+                faturamentoMeses[mesKey] = aggregateData(getFilteredRegistros(inicioMes, fimMes)).totalVendido;
+            }
+            createOrUpdateChart('chartFaturamentoMensal', {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(faturamentoMeses).reverse(),
+                    datasets: [{ label: 'Faturamento', data: Object.values(faturamentoMeses).reverse(), backgroundColor: '#0052CC', borderWidth: 0, borderRadius: 4, barPercentage: 0.6, isCurrency: true }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => `R$${(v/1000).toFixed(0)}k` } } } }
+            });
+
+            const faturamentoLoja = {};
+            registrosMesAtual.forEach(r => faturamentoLoja[r.lojaId] = (faturamentoLoja[r.lojaId] || 0) + r.totalVendido);
+            createOrUpdateChart('chartFaturamentoPorLoja', {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(faturamentoLoja).map(id => lojasCache.find(l=>l.id===id)?.nome || 'N/A'),
+                    datasets: [{ label: 'Faturamento', data: Object.values(faturamentoLoja), backgroundColor: ['#0052CC', '#36B37E', '#FFAB00', '#FF5630', '#8E44AD', '#3498DB'], borderWidth: 0, isCurrency: true }]
+                },
+                options: { plugins: { legend: { position: 'right' } }, scales: {x:{display:false}, y:{display:false}} }
+            });
+
+            const rankingLojasBody = document.getElementById('rankingLojasBody');
+            if(rankingLojasBody){
+                rankingLojasBody.innerHTML = '';
+                const rankingData = Object.entries(faturamentoLoja).map(([id, valor]) => ({nome: lojasCache.find(l=>l.id===id)?.nome || 'N/A', faturamento: valor})).sort((a,b)=>b.faturamento - a.faturamento);
+                if(rankingData.length > 0) rankingData.forEach((item, i) => rankingLojasBody.innerHTML += `<tr><td class="font-bold">${i + 1}</td><td>${item.nome}</td><td>${formatCurrency(item.faturamento)}</td></tr>`);
+                else rankingLojasBody.innerHTML = `<tr><td colspan="3" class="text-center p-4">Sem dados.</td></tr>`;
+            }
+
+            const dadosPorDia = {};
+            registrosMesAtual.forEach(r => {
+                const diaKey = r.data.toISOString().split('T')[0];
+                dadosPorDia[diaKey] = (dadosPorDia[diaKey] || 0) + r.totalVendido;
+            });
+            const diasOrdenados = Object.entries(dadosPorDia).sort((a,b)=>b[1]-a[1]);
+            const topDiasList = document.getElementById('topDiasList'), pioresDiasList = document.getElementById('pioresDiasList');
+            if(topDiasList && pioresDiasList){
+                topDiasList.innerHTML = ''; pioresDiasList.innerHTML = '';
+                if(diasOrdenados.length > 0){
+                    diasOrdenados.slice(0, 5).forEach(d => topDiasList.innerHTML += `<li class="text-sm flex justify-between p-1 bg-green-50 rounded"><span>${new Date(d[0]+"T12:00:00").toLocaleDateString('pt-BR')}</span> <span class="font-semibold">${formatCurrency(d[1])}</span></li>`);
+                    diasOrdenados.slice(-5).reverse().forEach(d => pioresDiasList.innerHTML += `<li class="text-sm flex justify-between p-1 bg-red-50 rounded"><span>${new Date(d[0]+"T12:00:00").toLocaleDateString('pt-BR')}</span> <span class="font-semibold">${formatCurrency(d[1])}</span></li>`);
+                } else {
+                    topDiasList.innerHTML = `<li class="text-center p-2 text-sm">Sem dados.</li>`;
+                    pioresDiasList.innerHTML = `<li class="text-center p-2 text-sm">Sem dados.</li>`;
+                }
+            }
+        }
+        
+        // --- Detailed Dashboards ---
+        function updateDashboard1_1() {
+            const filtroLoja = document.getElementById('filtroLojaAba1').value;
+            const filtroInicio = document.getElementById('filtroPeriodoAba1Inicio').valueAsDate || DATA_INICIO_MES_ATUAL;
+            const filtroFim = document.getElementById('filtroPeriodoAba1Fim').valueAsDate || HOJE;
+            const regsSelecionado = getFilteredRegistros(filtroInicio, filtroFim, filtroLoja);
+            const dadosSelecionado = aggregateData(regsSelecionado);
+            
+            const diffTime = Math.abs(filtroFim.getTime() - filtroInicio.getTime());
+            const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const fimAnterior = new Date(filtroInicio);
+            fimAnterior.setDate(fimAnterior.getDate() - 1);
+            const inicioAnterior = new Date(fimAnterior);
+            inicioAnterior.setDate(inicioAnterior.getDate() - diffDias);
+            const regsAnterior = getFilteredRegistros(inicioAnterior, fimAnterior, filtroLoja);
+            const dadosAnterior = aggregateData(regsAnterior);
+            
+            const kpiTableBody = document.getElementById('kpiTableBody');
+            kpiTableBody.innerHTML = ''; 
+            const kpis = [
+                { label: 'Total Vendido (R$)', atual: dadosSelecionado.totalVendido, anterior: dadosAnterior.totalVendido, format: formatCurrency },
+                { label: 'Qtd Total Vendas', atual: dadosSelecionado.qtdTotalVendas, anterior: dadosAnterior.qtdTotalVendas, format: v => v.toLocaleString() },
+                { label: 'Qtd Atendimentos', atual: dadosSelecionado.qtdAtendimentos, anterior: dadosAnterior.qtdAtendimentos, format: v => v.toLocaleString() },
+                { label: 'Ticket Médio (R$)', atual: dadosSelecionado.qtdTotalVendas > 0 ? dadosSelecionado.totalVendido / dadosSelecionado.qtdTotalVendas : 0, anterior: dadosAnterior.qtdTotalVendas > 0 ? dadosAnterior.totalVendido / dadosAnterior.qtdTotalVendas : 0, format: formatCurrency },
+                { label: 'Taxa Conversão (%)', atual: dadosSelecionado.qtdAtendimentos > 0 ? (dadosSelecionado.qtdTotalVendas / dadosSelecionado.qtdAtendimentos) * 100 : 0, anterior: dadosAnterior.qtdAtendimentos > 0 ? (dadosAnterior.qtdTotalVendas / dadosAnterior.qtdAtendimentos) * 100 : 0, format: formatPercentage },
+            ];
+            if (regsSelecionado.length === 0 && regsAnterior.length === 0) {
+                 kpiTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-8">Nenhum dado para os filtros.</td></tr>`;
+            } else {
+                kpis.forEach(kpi => {
+                    const v = calculateVariation(kpi.atual, kpi.anterior);
+                    kpiTableBody.innerHTML += `<tr>
+                            <td class="font-medium text-neutral-darkest">${kpi.label}</td>
+                            <td>${kpi.format(kpi.atual)}</td><td>${kpi.format(kpi.anterior)}</td>
+                            <td class="${getVariationClass(v.absolute)}">${kpi.format(v.absolute)}</td>
+                            <td class="${getVariationClass(v.percent)}">${isFinite(v.percent) ? (v.percent > 0 ? '+' : '') + formatPercentage(v.percent) : 'N/A'}</td>
+                        </tr>`;
+                });
+            }
+        }
+        
+        function updateDashboard1_2() {
+            const filtroLoja = document.getElementById('filtroLojaAba1').value;
+            const filtroInicio = document.getElementById('filtroPeriodoAba1Inicio').valueAsDate || DATA_INICIO_MES_ATUAL;
+            const filtroFim = document.getElementById('filtroPeriodoAba1Fim').valueAsDate || HOJE;
+            const registros = getFilteredRegistros(filtroInicio, filtroFim, filtroLoja);
+            const dadosPorDia = {};
+            registros.forEach(r => {
+                const dia = r.data.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+                if (!dadosPorDia[dia]) dadosPorDia[dia] = { qtdAtendimentos: 0, qtdTotalVendas: 0, totalVendido: 0, vendasVinculadasQtd: 0, dataObj: r.data };
+                dadosPorDia[dia].qtdAtendimentos += r.qtdAtendimentos;
+                dadosPorDia[dia].qtdTotalVendas += r.qtdTotalVendas;
+                dadosPorDia[dia].totalVendido += r.totalVendido;
+                dadosPorDia[dia].vendasVinculadasQtd += r.vendasVinculadasQtd;
+            });
+
+            const sortedDias = Object.keys(dadosPorDia).sort((a, b) => dadosPorDia[a].dataObj - dadosPorDia[b].dataObj);
+            createOrUpdateChart('chartAtendimentosVendasDia', {
+                type: 'line',
+                data: {
+                    labels: sortedDias,
+                    datasets: [
+                        { label: 'Qtd Atendimentos', data: sortedDias.map(d => dadosPorDia[d].qtdAtendimentos), borderColor: '#0052CC', tension: 0.3, yAxisID: 'y' },
+                        { label: 'Qtd Total Vendas', data: sortedDias.map(d => dadosPorDia[d].qtdTotalVendas), borderColor: '#36B37E', tension: 0.3, yAxisID: 'y1' }
+                    ]
+                },
+                options: { scales: { y: { position: 'left' }, y1: { position: 'right', grid: { drawOnChartArea: false } } } }
+            });
+            createOrUpdateChart('chartTotalVendidoDia', {
+                type: 'line',
+                data: { labels: sortedDias, datasets: [{ label: 'Total Vendido (R$)', data: sortedDias.map(d => dadosPorDia[d].totalVendido), borderColor: '#FFAB00', fill: true, backgroundColor: '#FFF0B399', tension: 0.3, isCurrency: true }] },
+                options: { scales: { y: { ticks: { callback: v => formatCurrency(v) } } } }
+            });
+            createOrUpdateChart('chartComposicaoVendasDia', {
+                type: 'bar',
+                data: {
+                    labels: sortedDias,
+                    datasets: [
+                        { label: 'Vendas Vinculadas', data: sortedDias.map(d => dadosPorDia[d].vendasVinculadasQtd), backgroundColor: '#0052CC'},
+                        { label: 'Vendas Não Vinculadas', data: sortedDias.map(d => dadosPorDia[d].qtdTotalVendas - dadosPorDia[d].vendasVinculadasQtd), backgroundColor: '#DEEBFF'}
+                    ]
+                },
+                options: { scales: { x: { stacked: true }, y: { stacked: true } } }
+            });
+        }
+
+        function updateDashboard1_3() {
+            const filtroLoja = document.getElementById('filtroLojaAba1').value;
+            const filtroInicio = document.getElementById('filtroPeriodoAba1Inicio').valueAsDate || DATA_INICIO_MES_ATUAL;
+            const filtroFim = document.getElementById('filtroPeriodoAba1Fim').valueAsDate || HOJE;
+            const registros = getFilteredRegistros(filtroInicio, filtroFim, filtroLoja);
+            const tabelaBody = document.getElementById('tabelaDadosDiariosBody');
+            tabelaBody.innerHTML = '';
+            if (registros.length === 0) {
+                tabelaBody.innerHTML = `<tr><td colspan="7" class="text-center py-8">Nenhum registro para os filtros.</td></tr>`;
+                return;
+            }
+            const dadosDiariosAgregados = {};
+            registros.forEach(r => {
+                const diaKey = r.data.toISOString().split('T')[0]; 
+                if (!dadosDiariosAgregados[diaKey]) dadosDiariosAgregados[diaKey] = { dataObj: r.data, qtdAtendimentos: 0, vendasVinculadasQtd: 0, qtdTotalVendas: 0, totalVendido: 0 };
+                Object.keys(dadosDiariosAgregados[diaKey]).forEach(key => {
+                    if (key !== 'dataObj') dadosDiariosAgregados[diaKey][key] += r[key] || 0;
+                });
+            });
+            const sortedDias = Object.keys(dadosDiariosAgregados).sort((a,b) => new Date(a) - new Date(b));
+            let total = { qtdAtendimentos: 0, vendasVinculadasQtd: 0, qtdTotalVendas: 0, totalVendido: 0 };
+            sortedDias.forEach(diaKey => {
+                const d = dadosDiariosAgregados[diaKey];
+                Object.keys(total).forEach(key => total[key] += d[key]);
+                const ticket = d.qtdTotalVendas > 0 ? d.totalVendido / d.qtdTotalVendas : 0;
+                const conversao = d.qtdAtendimentos > 0 ? (d.qtdTotalVendas / d.qtdAtendimentos) * 100 : 0;
+                tabelaBody.innerHTML += `<tr>
+                        <td>${d.dataObj.toLocaleDateString('pt-BR')}</td><td>${d.qtdAtendimentos}</td><td>${d.vendasVinculadasQtd}</td><td>${d.qtdTotalVendas}</td>
+                        <td>${formatCurrency(d.totalVendido)}</td><td>${formatCurrency(ticket)}</td><td>${formatPercentage(conversao)}</td></tr>`;
+            });
+            const totalTicket = total.qtdTotalVendas > 0 ? total.totalVendido / total.qtdTotalVendas : 0;
+            const totalConversao = total.qtdAtendimentos > 0 ? (total.qtdTotalVendas / total.qtdAtendimentos) * 100 : 0;
+            tabelaBody.innerHTML += `<tr class="font-bold bg-neutral-lightest border-t-2">
+                    <td>Total</td><td>${total.qtdAtendimentos}</td><td>${total.vendasVinculadasQtd}</td><td>${total.qtdTotalVendas}</td>
+                    <td>${formatCurrency(total.totalVendido)}</td><td>${formatCurrency(totalTicket)}</td><td>${formatPercentage(totalConversao)}</td></tr>`;
+        }
+
+        function updateDashboard2_1() {
+            const filtroLoja = document.getElementById('filtroLojaAba2').value;
+            const dadosMA = aggregateData(getFilteredRegistros(DATA_INICIO_MES_ATUAL, DATA_FIM_MES_ATUAL, filtroLoja));
+            const dadosMANT = aggregateData(getFilteredRegistros(DATA_INICIO_MES_ANTERIOR, DATA_FIM_MES_ANTERIOR, filtroLoja));
+            const ticketMA = dadosMA.qtdTotalVendas ? dadosMA.totalVendido / dadosMA.qtdTotalVendas : 0;
+            const convMA = dadosMA.qtdAtendimentos ? (dadosMA.qtdTotalVendas / dadosMA.qtdAtendimentos) * 100 : 0;
+            const ticketMANT = dadosMANT.qtdTotalVendas ? dadosMANT.totalVendido / dadosMANT.qtdTotalVendas : 0;
+            const convMANT = dadosMANT.qtdAtendimentos ? (dadosMANT.qtdTotalVendas / dadosMANT.qtdAtendimentos) * 100 : 0;
+            
+            const kpis = [
+                { label: 'Faturamento (R$)', atual: dadosMA.totalVendido, anterior: dadosMANT.totalVendido, format: formatCurrency },
+                { label: 'Taxa de Conversão (%)', atual: convMA, anterior: convMANT, format: formatPercentage },
+                { label: 'Ticket Médio (R$)', atual: ticketMA, anterior: ticketMANT, format: formatCurrency },
+                { label: 'Qtd Atendimentos', atual: dadosMA.qtdAtendimentos, anterior: dadosMANT.qtdAtendimentos, format: v => v.toLocaleString() },
+                { label: 'Qtd Total Vendas', atual: dadosMA.qtdTotalVendas, anterior: dadosMANT.qtdTotalVendas, format: v => v.toLocaleString() },
+            ];
+            const tableBody = document.getElementById('comparativoMensalTableBody');
+            tableBody.innerHTML = '';
+            if (dadosMA.totalVendido === 0 && dadosMANT.totalVendido === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-8">Nenhum dado para os meses analisados.</td></tr>`;
+                return;
+            }
+            kpis.forEach(kpi => {
+                const v = calculateVariation(kpi.atual, kpi.anterior);
+                tableBody.innerHTML += `<tr>
+                        <td class="font-medium text-neutral-darkest">${kpi.label}</td><td>${kpi.format(kpi.atual)}</td><td>${kpi.format(kpi.anterior)}</td>
+                        <td class="${getVariationClass(v.absolute)}">${kpi.format(v.absolute)}</td>
+                        <td class="${getVariationClass(v.percent)}">${isFinite(v.percent) ? (v.percent > 0 ? '+' : '') + formatPercentage(v.percent) : 'N/A'}</td></tr>`;
+            });
+        }
+        
+        function updateDashboard2_2() {
+            const filtroLoja = document.getElementById('filtroLojaAba2').value;
+            const dadosMA = aggregateData(getFilteredRegistros(DATA_INICIO_MES_ATUAL, DATA_FIM_MES_ATUAL, filtroLoja));
+            const dadosMANT = aggregateData(getFilteredRegistros(DATA_INICIO_MES_ANTERIOR, DATA_FIM_MES_ANTERIOR, filtroLoja));
+            const ticketMA = dadosMA.qtdTotalVendas ? dadosMA.totalVendido / dadosMA.qtdTotalVendas : 0;
+            const convMA = dadosMA.qtdAtendimentos ? (dadosMA.qtdTotalVendas / dadosMA.qtdAtendimentos) * 100 : 0;
+            const ticketMANT = dadosMANT.qtdTotalVendas ? dadosMANT.totalVendido / dadosMANT.qtdTotalVendas : 0;
+            const convMANT = dadosMANT.qtdAtendimentos ? (dadosMANT.qtdTotalVendas / dadosMANT.qtdAtendimentos) * 100 : 0;
+
+            const labels = [`Mês Anterior`, `Mês Atual`];
+            createOrUpdateChart('chartComparativoFaturamento', {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Faturamento (R$)', data: [dadosMANT.totalVendido, dadosMA.totalVendido], backgroundColor: ['#DEEBFF', '#0052CC'], isCurrency: true }] }
+            });
+            createOrUpdateChart('chartComparativoConversao', {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Taxa de Conversão (%)', data: [convMANT, convMA], backgroundColor: ['#E3FCEF', '#36B37E'], isPercentage: true }] }
+            });
+            createOrUpdateChart('chartComparativoTicketMedio', {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Ticket Médio (R$)', data: [ticketMANT, ticketMA], backgroundColor: ['#FFF0B3', '#FFAB00'], isCurrency: true }] }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const registroDataInput = document.getElementById('registroData');
+            if (registroDataInput) registroDataInput.valueAsDate = new Date();
+        });
+
+    </script>
+</body>
+</html>
