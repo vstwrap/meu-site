@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
+        // Tailwind config remains for potential use with utility classes, but critical styles are now in CSS.
         tailwind.config = {
             theme: {
                 extend: {
@@ -38,28 +39,28 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F9FAFB;
+            background-color: #F9FAFB; /* neutral-lightest */
         }
         .tab-button {
             padding: 0.75rem 1.5rem;
             margin-right: 0.25rem;
             border-radius: 0.5rem 0.5rem 0 0;
             font-weight: 600;
-            color: #42526E;
-            background-color: #F4F5F7;
-            border: 1px solid #DFE1E6;
+            color: #42526E; /* neutral-darker */
+            background-color: #F4F5F7; /* neutral-light */
+            border: 1px solid #DFE1E6; /* neutral-medium */
             border-bottom: none;
             transition: all 0.2s ease-in-out;
             outline: none;
         }
         .tab-button:hover, .tab-button:focus {
             background-color: white;
-            color: #0052CC;
+            color: #0052CC; /* brand-blue */
         }
         .tab-button.active {
             background-color: white;
-            color: #0052CC;
-            border-color: #DFE1E6;
+            color: #0052CC; /* brand-blue */
+            border-color: #DFE1E6; /* neutral-medium */
             border-bottom: 1px solid white;
             position: relative;
             top: 1px;
@@ -69,7 +70,7 @@
             display: none;
             padding: 1.5rem;
             background-color: white;
-            border: 1px solid #DFE1E6;
+            border: 1px solid #DFE1E6; /* neutral-medium */
             border-radius: 0 0.5rem 0.5rem 0.5rem;
             box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.07), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
         }
@@ -81,11 +82,11 @@
             border-radius: 0.75rem;
             padding: 1.5rem;
             box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 0 1px 6px -1px rgba(0,0,0,0.02), 0 2px 4px 0 rgba(0,0,0,0.02);
-            border: 1px solid #DFE1E6;
+            border: 1px solid #DFE1E6; /* neutral-medium */
             margin-bottom: 1.5rem;
         }
         .card-header {
-            border-bottom: 1px solid #F4F5F7;
+            border-bottom: 1px solid #F4F5F7; /* neutral-light */
             padding-bottom: 1rem;
             margin-bottom: 1rem;
             display: flex;
@@ -93,61 +94,61 @@
             align-items: center;
         }
         .table-auto th {
-            background-color: #F4F5F7;
+            background-color: #F4F5F7; /* neutral-light */
             font-weight: 600;
-            color: #172B4D;
+            color: #172B4D; /* neutral-darkest */
             padding: 0.75rem 1rem;
             text-align: left;
-            border-bottom: 2px solid #DFE1E6;
+            border-bottom: 2px solid #DFE1E6; /* neutral-medium */
         }
         .table-auto td {
             padding: 0.75rem 1rem;
-            border-bottom: 1px solid #F4F5F7;
-            color: #42526E;
+            border-bottom: 1px solid #F4F5F7; /* neutral-light */
+            color: #42526E; /* neutral-darker */
         }
         .table-auto tbody tr:nth-child(even) {
-            background-color: #F9FAFB;
+            background-color: #F9FAFB; /* neutral-lightest */
         }
         .table-auto tbody tr:hover {
-            background-color: #DEEBFF;
+            background-color: #DEEBFF; /* brand-blue-light */
         }
         .kpi-card {
             background-color: white;
             padding: 1.5rem;
             border-radius: 0.75rem;
-            border: 1px solid #DFE1E6;
+            border: 1px solid #DFE1E6; /* neutral-medium */
             box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03);
         }
         .kpi-title {
              font-size: 0.875rem;
              font-weight: 600;
-             color: #42526E;
+             color: #42526E; /* neutral-darker */
              margin-bottom: 0.25rem;
         }
         .kpi-value {
              font-size: 2.25rem;
              font-weight: 800;
-             color: #172B4D;
+             color: #172B4D; /* neutral-darkest */
              line-height: 1.1;
         }
         .kpi-variation {
             font-size: 0.875rem;
             font-weight: 600;
         }
-        .variation-positive { color: #36B37E; font-weight: 500; }
-        .variation-negative { color: #FF5630; font-weight: 500; }
+        .variation-positive { color: #36B37E; /* brand-green */ font-weight: 500; }
+        .variation-negative { color: #FF5630; /* brand-red */ font-weight: 500; }
         .form-input, .form-select {
             border-radius: 0.5rem;
-            border: 1px solid #DFE1E6;
+            border: 1px solid #DFE1E6; /* neutral-medium */
             padding: 0.625rem 0.875rem;
             width: 100%;
             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             background-color: white;
-            color: #172B4D;
+            color: #172B4D; /* neutral-darkest */
         }
         .form-input:focus, .form-select:focus {
-            border-color: #0052CC;
-            box-shadow: 0 0 0 3px #DEEBFF;
+            border-color: #0052CC; /* brand-blue */
+            box-shadow: 0 0 0 3px #DEEBFF; /* brand-blue-light */
             outline: none;
         }
         .btn {
@@ -415,38 +416,7 @@
         import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, Timestamp, orderBy, limit, updateDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Configuration & Initialization ---
-        // =================================================================================
-        // ATENÇÃO: SUBSTITUA O BLOCO ABAIXO PELAS SUAS PRÓPRIAS CHAVES DO FIREBASE
-        // Para obter suas chaves:
-        // 1. Vá para o seu projeto no console do Firebase.
-        // 2. Clique no ícone de engrenagem ⚙️ > Configurações do projeto.
-        // 3. Na aba "Geral", role para baixo até "Seus apps".
-        // 4. Selecione a opção "Config" para ver e copiar o objeto firebaseConfig.
-        // =================================================================================
-      <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCiaJO0AUq8rEE-ylly_f6CYQbi1CJ0paY",
-    authDomain: "projeto-david-ecca3.firebaseapp.com",
-    projectId: "projeto-david-ecca3",
-    storageBucket: "projeto-david-ecca3.firebasestorage.app",
-    messagingSenderId: "689418367546",
-    appId: "1:689418367546:web:8aca2cf7379fa38ffe3b03",
-    measurementId: "G-CQQ4WKV6B9"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'painel-lojas-app-dev';
         
         document.getElementById('appIdDisplay').textContent = appId;
@@ -480,10 +450,6 @@
                 await loadInitialData(); 
             } else {
                 try {
-                    if (firebaseConfig.apiKey === "COLE_SUA_API_KEY_AQUI") {
-                        showModal("Erro de Configuração: As chaves do Firebase não foram definidas no arquivo index.html. Por favor, siga as instruções no código para adicionar suas chaves.", "Erro Crítico");
-                        return;
-                    }
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
@@ -492,7 +458,7 @@
                 } catch (error) {
                     console.error("Erro na autenticação:", error);
                     document.getElementById('userIdDisplay').textContent = "Erro de autenticação";
-                    showModal(`Erro de autenticação: ${error.message}. Verifique se suas chaves do Firebase estão corretas e se o domínio está autorizado no console.`, 'Erro');
+                    showModal(`Erro de autenticação: ${error.message}`, 'Erro');
                 }
             }
         });
